@@ -2,7 +2,8 @@ module Main where
 
 import Day01 (part1, part2)
 import Day02 (part1, part2)
-import qualified Day03
+import Day03 (part1, part2)
+import Day04 (part1, part2)
 
 main :: IO ()
 main = do
@@ -22,6 +23,12 @@ main = do
   day3 <- getInput 3
   putStrLn (Day03.part1 day3)
   putStrLn (Day03.part2 day3)
+
+  putStrLn "Day 4"
+  -- day4 <- getExample 4 1
+  day4 <- getInput 4
+  putStrLn (Day04.part1 day4)
+  putStrLn (Day04.part2 day4)
 
 
 getInput :: Int -> IO String
