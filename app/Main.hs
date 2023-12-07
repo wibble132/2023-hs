@@ -4,6 +4,7 @@ import Day01 (part1, part2)
 import Day02 (part1, part2)
 import Day03 (part1, part2)
 import Day04 (part1, part2)
+import Day05 (part1, part2, part2Better)
 
 main :: IO ()
 main = do
@@ -29,6 +30,13 @@ main = do
   day4 <- getInput 4
   putStrLn (Day04.part1 day4)
   putStrLn (Day04.part2 day4)
+
+  putStrLn "Day 5"
+  day5 <- getExample 5 1
+  -- day5 <- getInput 5
+  putStrLn (Day05.part1 day5)
+  putStrLn (Day05.part2 day5)
+  putStrLn (Day05.part2Better day5)
 
 
 getInput :: Int -> IO String
