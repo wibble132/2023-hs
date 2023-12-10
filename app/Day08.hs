@@ -1,4 +1,4 @@
-module Day08 where
+module Day08 (part1, part2) where
 
 import Data.Foldable (foldl')
 import Data.List (elemIndex, findIndices)
@@ -11,10 +11,13 @@ part1 s = show $ countMovesToZZZ (nodes input) (cycle $ moves input) (getNodeWit
     input = parseInput s
 
 -- 3500635456761298348877129 too high (no surprise hehe)
--- 3500635456761298348877129
+-- 3500635456761298348877129 fixed bug, but same answer as above so didn't submit
+-- 8906539031197 Correct, worked by hand based on helper functions here
+--               "Fixed" code, got this result. I was trying to make the code workd more generally than needed for this particular input
 part2 :: String -> String
 -- part2 s = show . getFinishIntersection . map (getCycle (nodes input) (moves input)) $ filter (endsWith 'A') $ nodes input
-part2 s = unlines . map (show . (\x -> (x, getCycle (nodes input) (moves input) x))) $ filter (endsWith 'A') $ nodes input
+-- part2 s = unlines . map (show . (\x -> (x, getCycle (nodes input) (moves input) x))) $ filter (endsWith 'A') $ nodes input
+part2 s = show . getFinishIntersection . map (getCycle (nodes input) (moves input)) $ filter (endsWith 'A') $ nodes input
 -- part2 s = show $ test input
   where
     input = parseInput s
@@ -62,9 +65,6 @@ takeMove :: [Node] -> Node -> Move -> Node
 takeMove ns n MLeft = getNodeWithName ns $ left n
 takeMove ns n MRight = getNodeWithName ns $ right n
 
-takeMoves :: [Node] -> [Move] -> Node -> Node
-takeMoves ns ms n = foldl' (takeMove ns) n ms
-
 takeMovesAll :: [Node] -> [Move] -> Node -> [Node]
 takeMovesAll ns ms n = reverse $ foldl' (\acc m -> takeMove ns (head acc) m : acc) [n] ms
 
@@ -77,17 +77,19 @@ countMovesToZZZ _ [] _ = error "No moves given to countMovesToZZZ"
 endsWith :: Char -> Node -> Bool
 endsWith c n = c == last (name n)
 
-data Cycle = Cycle {startIndex :: Integer, cycleLength :: Integer, finishIndex :: Integer} deriving (Show)
+data Cycle = Cycle {cycleLength :: Integer, finishIndex :: Integer} deriving (Show)
 
 getCycle :: [Node] -> [Move] -> Node -> Cycle
-getCycle ns ms n = Cycle firstIndex cycleLen (head finishIdxs)
+getCycle ns ms n = Cycle cycleLen (head finishIdxs)
   where
     (mvs, nCycleStart) = moveUntilCycle ns ms [] n
     nodesList = flattenCycleMoves mvs
     firstIndex = toInteger $ fromJust $ nCycleStart `elemIndex` nodesList
     finishIdxs = map toInteger $ findIndices (endsWith 'Z') nodesList
-    -- Assume if the final thing is repeated, that the whole cycle is (shh, it only happens in the example & is fine there)
-    cycleLen = (toInteger (length nodesList) - firstIndex) `div` toInteger (length finishIdxs)
+    -- This doesn't work in the example due to **r e a s o n s** and the offset at the end works for some reason...
+      -- (I do know why it doesn't work in example, and it only works on the input because it is a special case)
+      -- (The general problem is much harder, and because this is AoC we only care about the one input)
+    cycleLen = toInteger (length nodesList) - firstIndex
 
 moveUntilCycle :: [Node] -> [Move] -> [[Node]] -> Node -> ([[Node]], Node)
 moveUntilCycle ns ms prevs n =
@@ -101,15 +103,15 @@ moveUntilCycle ns ms prevs n =
 flattenCycleMoves :: [[Node]] -> [Node]
 flattenCycleMoves = foldl' (\acc x -> acc ++ init x) []
 
+-- something is wrong somewhere in multiple places, so i'm doing it like this
 getFinishIntersection :: [Cycle] -> Integer
-getFinishIntersection cs = head (filter (>= firstPossible) (iterate (+ m) x))
-  where
-    (x, m) = crt $ map (\c -> (finishIndex c, cycleLength c)) cs
-    firstPossible = maximum $ map finishIndex cs
+getFinishIntersection = foldl' lcm 1 . map finishIndex
 
 -- Chinese Remainder Theorem solver
-crt :: [(Integer, Integer)] -> (Integer, Integer)
-crt = foldr go (0, 1)
+-- I thought this was needed for finding the intersecion, but it turns out that the 
+--  finish points are singly at the end of the cycles so it suffices to find the lcm of them all as above
+_crt :: [(Integer, Integer)] -> (Integer, Integer)
+_crt = foldr go (0, 1)
   where
     go (r1, m1) (r2, m2) = (r `mod` m, m)
       where
@@ -124,7 +126,3 @@ crt = foldr go (0, 1)
     gcd' a b = (g, t - (b `div` a) * s, s)
       where
         (g, s, t) = gcd' (b `mod` a) a
-
-
--- test i = findIndex (\x -> name x == "QVZ") $ takeMovesAll (nodes i) (take 11309 $ cycle $ moves i) (getNodeWithName (nodes i) "DVA")
--- test i = takeMoves (nodes i) (take 22524 $ cycle $ moves i) (getNodeWithName (nodes i) "DVA")

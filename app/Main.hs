@@ -51,7 +51,8 @@ main = do
   putStrLn "Day 8"
   -- day8 <- getExample 8 3
   day8 <- getInput 8
-  day8_2 <- getExample 8 3
+  -- day8_2 <- getExample 8 3
+  day8_2 <- getInput 8
   putStrLn (Day08.part1 day8)
   putStrLn (Day08.part2 day8_2)
 

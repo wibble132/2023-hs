@@ -1,4 +1,4 @@
-module Day10 where
+module Day10 (part1, part2) where
 
 import Data.Bifunctor (Bifunctor (bimap))
 import Data.Foldable (Foldable (foldl'))
