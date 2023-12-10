@@ -1,4 +1,4 @@
-module Day03 where
+module Day03 (part1, part2) where
 
 import Data.Char (digitToInt, isDigit)
 
@@ -27,9 +27,6 @@ data Symbol = Symbol {val :: Char, symbolLineNum :: Int, symbolLinePos :: Int} d
 parseInput :: String -> Schematic
 parseInput = foldlOneIndexed (\i schem line -> parseLine line i 1 schem) (Schematic [] []) . lines
 
-mapOneIndexed :: (Int -> a -> b) -> [a] -> [b]
-mapOneIndexed f = map (uncurry f) . withOneIndex
-
 foldlOneIndexed :: (Int -> b -> a -> b) -> b -> [a] -> b
 foldlOneIndexed f b l = foldl (\b1 (i, a) -> f i b1 a) b (withOneIndex l)
 
@@ -37,10 +34,12 @@ withOneIndex :: [a] -> [(Int, a)]
 withOneIndex l = [1 .. length l] `zip` l
 
 parseLine :: String -> Int -> Int -> Schematic -> Schematic
-parseLine (c : cs) lineNum linePos schem
-  | c == '.' = parseLine cs lineNum (linePos + 1) schem
-  | isDigit c = parseLine cs lineNum (linePos + 1) (addDigit ((toInteger . digitToInt) c) lineNum linePos schem)
-  | otherwise = parseLine cs lineNum (linePos + 1) (addSymbol c lineNum linePos schem)
+parseLine (c : cs) lineNum linePos schem = parseLine cs lineNum (linePos + 1) newSchem
+  where
+    newSchem
+      | c == '.' = schem
+      | isDigit c = addDigit (toInteger $ digitToInt c) lineNum linePos schem
+      | otherwise = addSymbol c lineNum linePos schem
 parseLine "" _ _ schem = schem
 
 addDigit :: Integer -> Int -> Int -> Schematic -> Schematic
@@ -53,9 +52,6 @@ addDigit digit lineNum linePos schem = case (length . numbers) schem of
 
 addSymbol :: Char -> Int -> Int -> Schematic -> Schematic
 addSymbol symbol lineNum linePos schem = schem {symbols = Symbol symbol lineNum linePos : symbols schem}
-
-getNumbersSurrounding :: Symbol -> Schematic -> [PartNumber]
-getNumbersSurrounding symbol = filter (`doesSurround` symbol) . numbers
 
 doesSurround :: PartNumber -> Symbol -> Bool
 doesSurround number sym =

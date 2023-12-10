@@ -1,6 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Day02 where
+module Day02 (part1, part2) where
 
 import Data.List.Split (splitOn)
 
@@ -26,7 +26,7 @@ readLine :: String -> Line
 readLine = parseLine . words
 
 parseLine :: [String] -> Line
-parseLine ("Game" : lineId : pulls) = Line (read (init lineId) :: Int) (parsePulls (unwords pulls))
+parseLine ("Game" : lineId : pulls) = Line (read (init lineId)) (parsePulls (unwords pulls))
 parseLine _ = error "Bad line in input"
 
 parsePulls :: String -> [Pull]
@@ -55,7 +55,9 @@ pullLessThan :: Pull -> Pull -> Bool
 pullLessThan (Pull baseline) (Pull testPull) = all (\(count, colour) -> getCountForColour colour (Pull testPull) <= count) baseline
 
 getCountForColour :: Colour -> Pull -> Count
-getCountForColour testCol (Pull ((count, col) : ccs)) = if testCol == col then count else getCountForColour testCol (Pull ccs)
+getCountForColour testCol (Pull ((count, col) : ccs))
+  | testCol == col =  count 
+  | otherwise = getCountForColour testCol (Pull ccs)
 getCountForColour _ (Pull []) = 0
 
 getId :: Line -> Int
@@ -72,4 +74,4 @@ power :: Line -> Count
 power (Line _ pulls) = (product . map fst . getMinTotal) pulls
 
 getMinTotal :: [Pull] -> [(Count, Colour)]
-getMinTotal pulls = map (\col -> (maximum ( map (getCountForColour col) pulls), col)) colours
+getMinTotal pulls = map (\col -> (maximum $ map (getCountForColour col) pulls, col)) colours
