@@ -122,6 +122,8 @@ data WallEnterDirection = Up | Down | Both | None deriving (Eq, Show)
 
 data FoldData = FoldData {wallEnterDirection :: WallEnterDirection, insideArea :: Bool, currentArea :: Int} deriving (Show)
 
+data FoldData2 = FoldData2 {insideArea2 :: Bool, currentArea2 :: Int} deriving (Show)
+
 getInnerArea :: Board -> Int
 getInnerArea b = getInnerArea'
   where
@@ -129,10 +131,11 @@ getInnerArea b = getInnerArea'
     getInnerArea' = sum $ map (\rowNum -> getRowInnerArea $ rowNum * width b) [0 .. height b - 1]
 
     getRowInnerArea :: Int -> Int
-    getRowInnerArea rowStart = currentArea $ foldl' rowFoldStep (FoldData None False 0) [rowStart .. rowStart + width b - 1]
+    getRowInnerArea rowStart = currentArea2 $ foldl' rowFoldStep2 (FoldData2 False 0) [rowStart .. rowStart + width b - 1]
 
-    rowFoldStep :: FoldData -> Int -> FoldData
-    rowFoldStep (FoldData enterDir inside tot) pos
+    -- Deal with all cases of pipes we see: |, L, J, -, F, 7
+    _rowFoldStep :: FoldData -> Int -> FoldData
+    _rowFoldStep (FoldData enterDir inside tot) pos
       | not isPipe && not inside = FoldData None False tot
       | not isPipe && inside = FoldData None True (tot + 1)
       -- Found a new pipe |
@@ -150,7 +153,7 @@ getInnerArea b = getInnerArea'
       -- F---J
       | isPipe && enterDir == Down && leavingWall && currDir == Up = FoldData None (not inside) tot
       -- tile after a |, the prev wall doesn't affect us
-      | isPipe && enterDir == Both = rowFoldStep (FoldData None inside tot) pos
+      | isPipe && enterDir == Both = _rowFoldStep (FoldData None inside tot) pos
       | otherwise = error $ "no path on " ++ show (FoldData enterDir inside tot)
       where
         isPipe = b `hasPipe` pos
@@ -161,6 +164,19 @@ getInnerArea b = getInnerArea'
           | movesUp pipe = Up
           | movesDown pipe = Down
           | otherwise = error $ show pipe
+
+    -- slightly simpler - change inside <-> outside whenever we see L, |, or J. Ignore F, -, and 7
+    rowFoldStep2 :: FoldData2 -> Int -> FoldData2
+    rowFoldStep2 (FoldData2 inside tot) pos
+      | not isPipe && not inside = FoldData2 False tot
+      | not isPipe && inside = FoldData2 True (tot + 1)
+      -- Found a new pipe |
+      | isPipe && movesUp pipe = FoldData2 (not inside) tot
+      | isPipe = FoldData2 inside tot
+      | otherwise = error $ "no path on " ++ show (FoldData2 inside tot)
+      where
+        isPipe = b `hasPipe` pos
+        pipe = getPipe b pos
 
 -- rowFoldStep b (n, False) i = (n, b `hasPipe` i)
 -- rowFoldStep b (n, True) i
