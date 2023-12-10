@@ -6,6 +6,8 @@ import Day03 (part1, part2)
 import Day04 (part1, part2)
 import Day05 (part1, part2, part2Better)
 import Day07 (part1, part2)
+import Day08 (part1, part2)
+import Day09 (part1, part2)
 
 main :: IO ()
 main = do
@@ -44,6 +46,18 @@ main = do
   day7 <- getInput 7
   putStrLn (Day07.part1 day7)
   putStrLn (Day07.part2 day7)
+
+  putStrLn "Day 8"
+  -- day8 <- getExample 8 3
+  day8 <- getInput 8
+  putStrLn (Day08.part1 day8)
+  putStrLn (Day08.part2 day8)
+
+  putStrLn "Day 9"
+  day9 <- getExample 9 1
+  -- day9 <- getInput 9
+  putStrLn (Day09.part1 day9)
+  putStrLn (Day09.part2 day9)
 
 getInput :: Int -> IO String
 getInput day = readFile ("app/data/day" ++ show day ++ ".txt")

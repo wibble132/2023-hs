@@ -8,7 +8,7 @@ import Data.List (sortOn)
 -- 249483956 Correct :)
 part1 :: String -> String
 part1 = show . sum . mapOneIndexed (*) . map snd . sortOn fst . value . parseInput
-
+-- 252137472 Correct :)
 part2 :: String -> String
 part2 = show . sum . mapOneIndexed (*) . map snd . sortOn fst . value . mapToPart2 . parseInput
 
@@ -55,7 +55,9 @@ parseInputLine [cards, bet] = (parseCards cards, read bet)
 parseInputLine _ = error "Bad input line"
 
 parseCards :: String -> Hand
-parseCards s = Hand cards (getScore cards) where cards = map (read . (: [])) s
+parseCards s = Hand cards (getScore cards)
+  where
+    cards = map (read . (: [])) s
 
 allCards :: [Card]
 allCards = [A, K, Q, J, T, N9, N8, N7, N6, N5, N4, N3, N2]
