@@ -11,9 +11,11 @@ part1 s = show $ countMovesToZZZ (nodes input) (cycle $ moves input) (getNodeWit
     input = parseInput s
 
 -- 3500635456761298348877129 too high (no surprise hehe)
+-- 3500635456761298348877129
 part2 :: String -> String
 -- part2 s = show . getFinishIntersection . map (getCycle (nodes input) (moves input)) $ filter (endsWith 'A') $ nodes input
-part2 s = unlines . map (show . getCycle (nodes input) (moves input)) $ filter (endsWith 'A') $ nodes input
+part2 s = unlines . map (show . (\x -> (x, getCycle (nodes input) (moves input) x))) $ filter (endsWith 'A') $ nodes input
+-- part2 s = show $ test input
   where
     input = parseInput s
 
@@ -78,7 +80,7 @@ endsWith c n = c == last (name n)
 data Cycle = Cycle {startIndex :: Integer, cycleLength :: Integer, finishIndex :: Integer} deriving (Show)
 
 getCycle :: [Node] -> [Move] -> Node -> Cycle
-getCycle ns ms n = Cycle firstIndex cycleLen (head finishIdxs - 1)
+getCycle ns ms n = Cycle firstIndex cycleLen (head finishIdxs)
   where
     (mvs, nCycleStart) = moveUntilCycle ns ms [] n
     nodesList = flattenCycleMoves mvs
@@ -100,7 +102,7 @@ flattenCycleMoves :: [[Node]] -> [Node]
 flattenCycleMoves = foldl' (\acc x -> acc ++ init x) []
 
 getFinishIntersection :: [Cycle] -> Integer
-getFinishIntersection cs = 1 + head (filter (>= firstPossible) (iterate (+ m) x))
+getFinishIntersection cs = head (filter (>= firstPossible) (iterate (+ m) x))
   where
     (x, m) = crt $ map (\c -> (finishIndex c, cycleLength c)) cs
     firstPossible = maximum $ map finishIndex cs
@@ -122,3 +124,7 @@ crt = foldr go (0, 1)
     gcd' a b = (g, t - (b `div` a) * s, s)
       where
         (g, s, t) = gcd' (b `mod` a) a
+
+
+-- test i = findIndex (\x -> name x == "QVZ") $ takeMovesAll (nodes i) (take 11309 $ cycle $ moves i) (getNodeWithName (nodes i) "DVA")
+-- test i = takeMoves (nodes i) (take 22524 $ cycle $ moves i) (getNodeWithName (nodes i) "DVA")
