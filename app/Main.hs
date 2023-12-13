@@ -13,7 +13,7 @@ import Day11 (part1, part2)
 import Day12 (part1, part2)
 
 main :: IO ()
-main = day 12 1
+main = day 12 0
 
 day :: Int -> Int -> IO ()
 day d i = do
