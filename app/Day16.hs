@@ -3,22 +3,31 @@
 module Day16 (part1, part2) where
 
 import Data.List.Split (chunksOf)
-import GHC.Arr (Array, array, bounds, elems, indices, (!))
+import GHC.Arr (Array, array, bounds, indices, (!))
 import Utils (mapIndexed)
 import Prelude hiding (Left, Right)
 import Data.Set (Set, insert, member, map, empty)
 
 -- 6855 Correct :)
 part1 :: String -> String
--- part1 s = _showVisitedPoints w h $ visitTiles tileGrid Data.Set.empty ((0, 0), Right) 200
-part1 s = show $ length $ Data.Set.map fst $ visitTiles tileGrid Data.Set.empty ((0, 0), Right) 1000000
+part1 s = show $ countEnergisedTiles tileGrid ((0,0), Right)
   where
     tileGrid = parseInput s
     _emptyVisitedGrid = array (bounds tileGrid) [(i, False) | i <- indices tileGrid]
     (_, (_w, _h)) = bounds tileGrid
 
+-- 7513 Correct :)
 part2 :: String -> String
-part2 = const ""
+part2 s = show $ maximum $ Prelude.map (countEnergisedTiles tileGrid) allEdges
+  where 
+    tileGrid = parseInput s
+    (_, (w,h)) = bounds tileGrid
+
+    leftEdge = [((i,0), Right) | i <- [0..w]]
+    rightEdge = [((i,h), Left) | i <- [0..w]]
+    topEdge = [((0,i), Down) | i <- [0..h]]
+    bottomEdge = [((w,i), Up) | i <- [0..h]]
+    allEdges = leftEdge ++ rightEdge ++ topEdge ++ bottomEdge
 
 data MirrorType = Forward | Backward deriving (Show, Eq, Ord)
 
@@ -37,8 +46,6 @@ type Position = (Int, Int)
 type Vector = (Position, Direction)
 
 type TileGrid = Array Position Tile
-
-type VisitedGrid = Array Position Bool
 
 type VisitedPoints = Set Vector
 
@@ -59,11 +66,10 @@ parseInput s = array ((0, 0), (length grid - 1, length (head grid) - 1)) tileGri
     charToTile _ = EmptySpace
 
 visitTiles :: TileGrid -> VisitedPoints -> Vector -> Int -> VisitedPoints
-visitTiles tiles visited _v@(pos, dir) depth
-  -- Break condition, end on first return to (0,0)
-  | pos == (0, 0) && not (null visited) = visited -- visited ! pos = visited
-  | _v `member` visited = visited
-  | depth == 0 = error $ "Max depth reached " ++ show _v ++ "\n" ++ _showVisitedPoints 9 9 visited
+visitTiles tiles visited vec@(pos, dir) depth
+  -- Already done, don't loop
+  | vec `member` visited = visited
+  -- Move onwards!
   | currTile == EmptySpace = move dir
   | currTile == Mirror Forward = case dir of
       Up -> move Right
@@ -85,16 +91,16 @@ visitTiles tiles visited _v@(pos, dir) depth
       Down -> moveBoth Left Right
       Left -> move Left
       Right -> move Right
-  | otherwise = error $ "Unknown input " ++ show (pos, dir)
+  | otherwise = error $ "Unknown input " ++ show vec ++ "\n" ++ _showVisitedPoints (snd $ bounds tiles) visited
   where
     currTile = tiles ! pos
 
-    nextVisited = _v `insert` visited -- // [(pos, True)]
+    nextVisited = vec `insert` visited
     (_, (w, h)) = bounds tiles
 
     movePos :: Position -> Direction -> Maybe Position
     movePos (a, b) Up = if a > 0 then Just (a - 1, b) else Nothing
-    movePos (a, b) Down = if a < w then Just (a + 1, b) else Nothing -- error $ "Hi" ++ show _v
+    movePos (a, b) Down = if a < w then Just (a + 1, b) else Nothing
     movePos (a, b) Left = if b > 0 then Just (a, b - 1) else Nothing
     movePos (a, b) Right = if b < h then Just (a, b + 1) else Nothing
 
@@ -108,12 +114,10 @@ visitTiles tiles visited _v@(pos, dir) depth
       Just newPos -> visitTiles tiles (move dir1) (newPos, dir2) (depth - 1)
       Nothing -> move dir1
 
-_showVisitedGrid :: VisitedGrid -> String
-_showVisitedGrid visited = unlines $ chunksOf (w + 1) $ Prelude.map (\x -> if x then '#' else '.') $ GHC.Arr.elems visited
-  where
-    (_, (_, w)) = bounds visited
-
-_showVisitedPoints :: Int -> Int -> VisitedPoints -> String
-_showVisitedPoints w h vectors =
+_showVisitedPoints :: (Int, Int) -> VisitedPoints -> String
+_showVisitedPoints (w, h) vectors =
   unlines $ chunksOf (w + 1) [if (i, j) `member` points then '#' else '.' | (i, j) <- concatMap (\i -> Prelude.map (i,) [0 .. h]) [0 .. w]]
   where points = Data.Set.map fst vectors
+
+countEnergisedTiles :: TileGrid -> Vector -> Int
+countEnergisedTiles tileGrid v = length $ Data.Set.map fst $ visitTiles tileGrid Data.Set.empty v 10000000
