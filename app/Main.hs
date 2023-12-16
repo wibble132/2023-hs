@@ -12,9 +12,10 @@ import Day10 (part1, part2)
 import Day11 (part1, part2)
 import Day12 (part1, part2)
 import Day13 (part1, part2)
+import Day14 (part1, part2)
 
 main :: IO ()
-main = day 13 0
+main = day 14 0
 
 day :: Int -> Int -> IO ()
 day d i = do
@@ -50,6 +51,8 @@ getDayPart d p = case (d,p) of
   (12,2) -> Day12.part2
   (13,1) -> Day13.part1
   (13,2) -> Day13.part2
+  (14,1) -> Day14.part1
+  (14,2) -> Day14.part2
   _ -> error "Unknown day part"
 
 getInput :: Int -> IO String

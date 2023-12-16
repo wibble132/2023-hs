@@ -62,13 +62,13 @@ executable AoC2023
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Day01, Day02, Day03, Day04, Day05, Day07, Day08, Day09, Day10, Day11, Day12, Day13
+    other-modules: Day01, Day02, Day03, Day04, Day05, Day07, Day08, Day09, Day10, Day11, Day12, Day13, Day14
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.17.2.0, split, parallel, containers, MemoTrie
+    build-depends:    base ^>=4.17.2.0, split, parallel, containers, MemoTrie, hashable
 
     -- Directories containing source files.
     hs-source-dirs:   app

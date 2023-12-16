@@ -1,0 +1,4 @@
+#!/bin/bash
+# compiles the code and times the result
+# Runs multithreaded on 8 threads
+cabal build && time dist-newstyle/build/x86_64-linux/ghc-9.4.7/AoC2023-0.1/x/AoC2023/build/AoC2023/AoC2023 +RTS -N8
