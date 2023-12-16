@@ -1,11 +1,10 @@
 module Day14 (part1, part2) where
 
-import Data.Bifunctor (second)
-import Data.Foldable (Foldable (foldr'))
-import Data.Hashable (Hashable, hash)
+import Data.Hashable (hash)
 import Data.List (elemIndex)
 import Data.Maybe (fromJust)
 import Data.Set (Set, empty, insert, member)
+import Utils (withOneIndex, fPow, fPow')
 
 -- 111979
 part1 :: String -> String
@@ -23,12 +22,6 @@ part2 s = show $ weight billionStones
     billionModDiff = 1000000000 `mod` idxDiff
     billion = head $ filter (>= idx1) [billionModDiff, billionModDiff + idxDiff ..]
     billionStones = rollCycles input !! billion
-
-fPow :: Int -> (a -> a) -> (a -> a)
-fPow n f = foldr' (.) id $ replicate n f
-
-fPow' :: Int -> (a -> a) -> a -> a
-fPow' n f a = iterate f a !! n
 
 rollStonesEast :: [[Char]] -> [[Char]]
 rollStonesEast = fPow 100 (map rollLineEast)
@@ -51,12 +44,6 @@ weight = sum . map (lineWeight . reverse) . transpose
     lineWeight :: [Char] -> Integer
     lineWeight = sum . map fst . filter ((== 'O') . snd) . withOneIndex
 
-withOneIndex :: [a] -> [(Integer, a)]
-withOneIndex l = [1 ..] `zip` l
-
-withIndex :: [a] -> [(Integer, a)]
-withIndex l = [0 ..] `zip` l
-
 rollCycle :: [[Char]] -> [[Char]]
 rollCycle = fPow' 4 (rotate . rollStonesNorth)
 
@@ -67,7 +54,7 @@ rotate :: [[a]] -> [[a]]
 rotate = map reverse . transpose
 
 firstDupOn :: (Ord b) => (a -> b) -> [a] -> Maybe a
-firstDupOn f l = go f l empty
+firstDupOn _f l = go _f l empty
   where
     go :: (Ord b) => (a -> b) -> [a] -> Set b -> Maybe a
     go _ [] _ = Nothing

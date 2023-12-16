@@ -51,18 +51,20 @@ common warnings
     ghc-options: -Wall
 
 executable AoC2023
+    -- Import common warning flags.
+    import:           warnings
+
     ghc-options: 
         -threaded
         -O3
-
-    -- Import common warning flags.
-    import:           warnings
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Day01, Day02, Day03, Day04, Day05, Day07, Day08, Day09, Day10, Day11, Day12, Day13, Day14, Day15
+    other-modules: 
+        Utils,
+        Day01, Day02, Day03, Day04, Day05, Day07, Day08, Day09, Day10, Day11, Day12, Day13, Day14, Day15, Day16
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

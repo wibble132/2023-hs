@@ -7,15 +7,13 @@ module Day12 (part1, part2) where
 
 import Control.Monad.Fix (fix)
 import Control.Parallel.Strategies (parMap, rdeepseq)
-import Data.List (group, sort)
 import Data.List.Split (splitOn)
-import Data.Map (Map, empty, (!))
-import Data.MemoTrie (HasTrie (..), Reg, enumerateGeneric, memo, memo2, memoFix, trieGeneric, untrieGeneric)
+import Data.MemoTrie (HasTrie (..), Reg, enumerateGeneric, memo2, trieGeneric, untrieGeneric)
 import GHC.Generics (Generic)
 
 -- 8419 Correct :)
 part1 :: String -> String
-part1 = show . sum . map (countArrangements2 . parseLine) . lines
+part1 = show . sum . map (countArrangements . parseLine) . lines
 
 -- 30 - 30s
 -- 40 - 30s
@@ -23,21 +21,12 @@ part1 = show . sum . map (countArrangements2 . parseLine) . lines
 -- rethink time ;)
 -- 160500973317706 first memo "working" - too high (but only 7s realtime :) )
 -- 5604841818 too low
--- 160500973317706 correct 
+-- 160500973317706 correct (wtf this is the same as the other answer???)
 part2 :: String -> String
-part2 = show . sum . map p2. lines
-
--- 5604841818
--- 5604841818
-
--- part2 = show . countArrangements . parseLine . mapLinePart2 5 . const "????#????.??? 1,2,1,1"
-
--- part2 = show . parseSprings2 [1, 2] . const "????#????.????????#????.????????#????.????????#????.????????#????.???"
+part2 = show . sum . parMap rdeepseq p2. lines
 
 p2 :: String -> Integer
 p2 = countArrangements2 . parseLine . mapLinePart2 5
-
-func2 as = parMap rdeepseq p2
 
 data Spring = Unknown | Damaged | Operational deriving (Eq, Ord, Generic)
 
@@ -61,8 +50,6 @@ parseLine = parseParts . words
   where
     parseParts [a, b] = Input (map (read . (: [])) a) (map read $ splitOn "," b)
     parseParts _ = Input [] []
-
-type Args = (Bool, [Spring], [Integer])
 
 countArrangements :: Input -> Integer
 countArrangements (Input springs lengths) = count False springs lengths

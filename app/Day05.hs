@@ -1,8 +1,9 @@
-module Day05 where
+module Day05 (part1, part2, part2Better) where
 
 import Data.List (foldl', sortBy, stripPrefix)
 import Data.List.Split (splitOn)
 import Data.Ord (comparing)
+import Data.Maybe (fromJust)
 
 -- 462648396 Correct :)
 part1 :: String -> String
@@ -23,14 +24,14 @@ data FarmMap = FarmMap
   }
   deriving (Show)
 
-mapSourceLast :: FarmMap -> Integer
-mapSourceLast farmMap = mapSourceStart farmMap + mapLength farmMap - 1
+_mapSourceLast :: FarmMap -> Integer
+_mapSourceLast farmMap = mapSourceStart farmMap + mapLength farmMap - 1
 
 mapSourceInterval :: FarmMap -> Interval
 mapSourceInterval farmMap = Interval (mapSourceStart farmMap) (mapLength farmMap)
 
-mapDestInterval :: FarmMap -> Interval
-mapDestInterval farmMap = Interval (mapDestStart farmMap) (mapLength farmMap)
+_mapDestInterval :: FarmMap -> Interval
+_mapDestInterval farmMap = Interval (mapDestStart farmMap) (mapLength farmMap)
 
 data Almanac = Almanac
   { seedsList :: [Integer],
@@ -51,12 +52,8 @@ parseInput' :: [String] -> Almanac
 parseInput' (seeds : maps) = makeAlmanac (parseSeeds seeds) (map (parseFarmMap . lines) maps)
 parseInput' _ = error "Bad input"
 
-getMaybeValue :: Maybe a -> a
-getMaybeValue (Just x) = x
-getMaybeValue Nothing = error "Bad maybe value"
-
 parseSeeds :: String -> [Integer]
-parseSeeds = map read . words . getMaybeValue . stripPrefix "seeds: "
+parseSeeds = map read . words . fromJust . stripPrefix "seeds: "
 
 parseFarmMap :: [String] -> [FarmMap]
 parseFarmMap (_ : farmMaps) = map (makeFarmMap . map read . words) farmMaps

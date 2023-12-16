@@ -2,6 +2,7 @@ module Day10 (part1, part2) where
 
 import Data.Bifunctor (Bifunctor (bimap))
 import Data.Foldable (Foldable (foldl'))
+import Utils (withIndex)
 
 -- 6754 Correct :)
 part1 :: String -> String
@@ -88,9 +89,6 @@ leadsTo p1 p2 = a == p || b == p
   where
     p = position p2
     (a, b) = exits p1
-
-withIndex :: [a] -> [(Int, a)]
-withIndex l = [0 .. length l - 1] `zip` l
 
 onlyMainLoop :: Board -> Board
 onlyMainLoop board = board {pipes = map (sourceToPipe board) $ mainLoop (getSource board) (fst $ getSourceNeighbours board)}

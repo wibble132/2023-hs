@@ -2,7 +2,7 @@ module Day13 (part1, part2) where
 
 import Data.List (foldl')
 import Data.List.Split (splitOn)
-import Data.Maybe (fromMaybe, isNothing)
+import Data.Maybe (fromMaybe)
 import Data.Bits (popCount, xor)
 
 -- 21667 too low

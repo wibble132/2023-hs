@@ -1,4 +1,4 @@
-module Day09 where
+module Day09 (part1, part2) where
 
 -- 1708206096 Correct :)
 part1 :: String -> String

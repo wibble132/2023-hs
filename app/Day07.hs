@@ -1,9 +1,10 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Day07 where
+module Day07 (part1, part2) where
 
 import Data.Bifunctor (Bifunctor (first))
 import Data.List (sortOn)
+import Utils (mapOneIndexed)
 
 -- 249483956 Correct :)
 part1 :: String -> String
@@ -73,12 +74,6 @@ getScore cards = case counts of
   _ -> HighCard
   where
     counts = sortOn (\x -> -x) $ map (\card -> length $ filter (== card) cards) allCards
-
-mapOneIndexed :: (Integer -> a -> b) -> [a] -> [b]
-mapOneIndexed f = map (uncurry f) . withOneIndex
-
-withOneIndex :: [a] -> [(Integer, a)]
-withOneIndex l = [1 .. toInteger $ length l] `zip` l
 
 mapToPart2 :: Input -> Input
 mapToPart2 (Input l) = Input $ map (first mapToPart2') l

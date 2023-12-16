@@ -4,6 +4,7 @@ module Day11 (part1, part2) where
 
 import Data.Bifunctor (first)
 import Data.Tuple (swap)
+import Utils (withIndex, mapIndexed)
 
 -- 9742154 Correct :)
 part1 :: String -> String
@@ -19,12 +20,6 @@ parseLine :: Integer -> String -> [Pos]
 parseLine i = map (\(j, _) -> (i, j)) . filter ((/= '.') . snd) . withIndex
 
 type Pos = (Integer, Integer)
-
-mapIndexed :: (Integer -> a -> b) -> [a] -> [b]
-mapIndexed f = map (uncurry f) . withIndex
-
-withIndex :: [a] -> [(Integer, a)]
-withIndex l = [0 ..] `zip` l
 
 expandAll :: [Pos] -> [Pos]
 expandAll = map swap . expandColumns . map swap . expandColumns

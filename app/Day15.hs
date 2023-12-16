@@ -6,6 +6,7 @@ import Data.Char (digitToInt, ord)
 import Data.Foldable (foldl')
 import Data.List.Split (splitOn)
 import GHC.Arr (Array, array, elems, (!), (//))
+import Utils (mapOneIndexed)
 
 -- 511215 Correct :)
 part1 :: String -> String
@@ -39,10 +40,3 @@ applyInstruction a (Remove lab) = a // [(hash lab, filter (\x -> label x /= lab)
 
 focusingPower :: Array Int [Lens] -> Integer
 focusingPower = sum . mapOneIndexed (\i x -> sum $ mapOneIndexed (\j l -> j * i * toInteger (focalLength l)) x) . elems
-
--- lol these really should be in a `Utils` library or something...
-mapOneIndexed :: (Integer -> a -> b) -> [a] -> [b]
-mapOneIndexed f = map (uncurry f) . withOneIndex
-
-withOneIndex :: [a] -> [(Integer, a)]
-withOneIndex l = [1 ..] `zip` l
