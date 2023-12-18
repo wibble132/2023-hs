@@ -3,14 +3,14 @@
 module Day16 (part1, part2) where
 
 import Data.List.Split (chunksOf)
+import Data.Set (Set, empty, insert, map, member)
 import GHC.Arr (Array, array, bounds, indices, (!))
-import Utils (mapIndexed)
+import Utils (Direction (..), Position, Vector, withIndex2D)
 import Prelude hiding (Left, Right)
-import Data.Set (Set, insert, member, map, empty)
 
 -- 6855 Correct :)
 part1 :: String -> String
-part1 s = show $ countEnergisedTiles tileGrid ((0,0), Right)
+part1 s = show $ countEnergisedTiles tileGrid ((0, 0), Right)
   where
     tileGrid = parseInput s
     _emptyVisitedGrid = array (bounds tileGrid) [(i, False) | i <- indices tileGrid]
@@ -19,14 +19,14 @@ part1 s = show $ countEnergisedTiles tileGrid ((0,0), Right)
 -- 7513 Correct :)
 part2 :: String -> String
 part2 s = show $ maximum $ Prelude.map (countEnergisedTiles tileGrid) allEdges
-  where 
+  where
     tileGrid = parseInput s
-    (_, (w,h)) = bounds tileGrid
+    (_, (w, h)) = bounds tileGrid
 
-    leftEdge = [((i,0), Right) | i <- [0..w]]
-    rightEdge = [((i,h), Left) | i <- [0..w]]
-    topEdge = [((0,i), Down) | i <- [0..h]]
-    bottomEdge = [((w,i), Up) | i <- [0..h]]
+    leftEdge = [((i, 0), Right) | i <- [0 .. w]]
+    rightEdge = [((i, h), Left) | i <- [0 .. w]]
+    topEdge = [((0, i), Down) | i <- [0 .. h]]
+    bottomEdge = [((w, i), Up) | i <- [0 .. h]]
     allEdges = leftEdge ++ rightEdge ++ topEdge ++ bottomEdge
 
 data MirrorType = Forward | Backward deriving (Show, Eq, Ord)
@@ -39,12 +39,6 @@ data Tile
   | Splitter SplitterType
   deriving (Show, Eq)
 
-data Direction = Up | Down | Left | Right deriving (Show, Eq, Ord)
-
-type Position = (Int, Int)
-
-type Vector = (Position, Direction)
-
 type TileGrid = Array Position Tile
 
 type VisitedPoints = Set Vector
@@ -56,7 +50,7 @@ parseInput s = array ((0, 0), (length grid - 1, length (head grid) - 1)) tileGri
     grid = lines s
 
     tileGridData :: [(Position, Tile)]
-    tileGridData = concat $ mapIndexed (\i -> mapIndexed (\j -> ((i, j),) . charToTile)) grid
+    tileGridData = concat $ withIndex2D $ Prelude.map (Prelude.map charToTile) grid
 
     charToTile :: Char -> Tile
     charToTile '/' = Mirror Forward
@@ -117,7 +111,8 @@ visitTiles tiles visited vec@(pos, dir) depth
 _showVisitedPoints :: (Int, Int) -> VisitedPoints -> String
 _showVisitedPoints (w, h) vectors =
   unlines $ chunksOf (w + 1) [if (i, j) `member` points then '#' else '.' | (i, j) <- concatMap (\i -> Prelude.map (i,) [0 .. h]) [0 .. w]]
-  where points = Data.Set.map fst vectors
+  where
+    points = Data.Set.map fst vectors
 
 countEnergisedTiles :: TileGrid -> Vector -> Int
 countEnergisedTiles tileGrid v = length $ Data.Set.map fst $ visitTiles tileGrid Data.Set.empty v 10000000
