@@ -16,7 +16,7 @@ import Day14 (part1, part2)
 import Day15 (part1, part2)
 import Day16 (part1, part2)
 import Day17 (part1, part2)
--- import Day18 (part1, part2)
+import Day18 (part1, part2)
 -- import Day19 (part1, part2)
 -- import Day20 (part1, part2)
 -- import Day21 (part1, part2)
@@ -26,7 +26,7 @@ import Day17 (part1, part2)
 -- import Day25 (part1, part2)
 
 main :: IO ()
-main = day 17 0
+main = day 18 0
 
 day :: Int -> Int -> IO ()
 day d i = do
@@ -70,8 +70,8 @@ getDayPart d p = case (d,p) of
   (16,2) -> Day16.part2
   (17,1) -> Day17.part1
   (17,2) -> Day17.part2
-  -- (18,1) -> Day18.part1
-  -- (18,2) -> Day18.part2
+  (18,1) -> Day18.part1
+  (18,2) -> Day18.part2
   -- (19,1) -> Day19.part1
   -- (19,2) -> Day19.part2
   -- (20,1) -> Day20.part1
