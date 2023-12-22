@@ -1,0 +1,16 @@
+%lg -> zx, lx
+&bq -> rx
+%hf -> xm
+%gf -> fn, lx
+%bm -> lx, cp
+%cp -> lx, gb
+&vg -> bq
+%xm -> kh, lx
+%fn -> bm
+%kh -> lx, gf
+%lh -> lx
+%dl -> lh, lx
+%zx -> lx, hf
+%gb -> lx, dl
+&lx -> fn, hf, vg, lg
+broadcaster -> lg
