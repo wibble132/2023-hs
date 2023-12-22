@@ -13,30 +13,26 @@ import Data.Ord (Down (Down), comparing)
 import Data.Vector (Vector, fromList, replicate, (//))
 import Data.Vector.Generic ((!))
 import Debug.Trace (trace)
-import Utils (withIndex)
 
 part1 :: String -> String
 part1 s = show (a * b)
   where
-    (a, b, _, _) = iterate (pushButton modules) (0, 0, dat, 0) !! 20000
+    (a, b, _, _) = iterate (pushButton modules) (0, 0, dat, 1) !! 20000
     (modules, dat) = parseInput s
 
 -- 238593356738827
 part2 :: String -> String
-part2 s = show $ foldl' lcm 1 ([4027, 3769, 3929, 4001] :: [Integer])
-  where
-    (modules, dat) = parseInput s
-    rx = last modules
-    bq = modules !! head (getInputs modules rx)
-    importants = getInputs modules bq
+part2 _ = show $ foldl' lcm 1 ([4027, 3769, 3929, 4001] :: [Integer])
+-- See ramble at the end for where these numbers are from
 
-conjStateToChar :: ConjunctionState -> Char
-conjStateToChar Disconnected = '_'
-conjStateToChar ConjHigh = '1'
-conjStateToChar ConjLow = '0'
+-- Used for display debugging
+_conjStateToChar :: ConjunctionState -> Char
+_conjStateToChar Disconnected = '_'
+_conjStateToChar ConjHigh = '1'
+_conjStateToChar ConjLow = '0'
 
-conjString :: Vector ConjunctionState -> String
-conjString = map conjStateToChar . toList
+_conjString :: Vector ConjunctionState -> String
+_conjString = map _conjStateToChar . toList
 
 pushButton :: [Module] -> (Int, Int, Data, Int) -> (Int, Int, Data, Int)
 pushButton ms (lows, highs, dat, buttonCount) = (lows + newLows + 1, highs + newHighs, nextDat, buttonCount + 1)
@@ -126,7 +122,7 @@ data ConjunctionState = Disconnected | ConjLow | ConjHigh deriving (Eq, Show)
 -- Wrapper around applyPulse to trace output some debugging info
 applyPulse' :: (Int, Int) -> Pulse -> Module -> Data -> ([(Pulse, Int)], Data)
 applyPulse' (btnNum, step) (Low _) (Conjunction _ i)
-  | i == 7 && trace (show (btnNum, step, i)) False = undefined
+  | i `elem` [1,2,6,7] && trace (show (btnNum, step, i)) False = undefined
 applyPulse' _ a b = applyPulse a b
 
 applyPulse :: Pulse -> Module -> Data -> ([(Pulse, Int)], Data)
@@ -155,11 +151,6 @@ applyPulse (Low _) (Broadcaster dests i) dat = (map (Low i,) dests, dat)
 applyPulse (High _) (RX _ _) dat = ([], dat)
 applyPulse (Low _) (RX _ i) dat = ([], first (// [(i, On)]) dat)
 
-withNext :: [a] -> [(a, a)]
-withNext (a : rest@(b : _)) = (a, b) : withNext rest
-withNext [_] = []
-withNext [] = []
-
 --- Manual nonsense for part 2
 {--
 
@@ -167,10 +158,15 @@ RX has an input of a Conjunction node
 This node has 4 inputs
 Each input comes from an independent section of the graph of modules.
 
-day20-e3.txt
-1. LH, DL, GB, CP, BM, FN, GF, KH, XM, HF, ZX, LG  --> &LX --> &VG --> &BQ --> RX
+First I found the id of these modules
+ -- since I sort the lines to get broadcaster at the top, it was useful to look at:
+part2 = unlines . sortBy (comparing Data.Ord.Down) . lines
 
-day20-e4.txt
-2.
+I used part 1 with changing the number of button presses to 10k to run for a while.
+Then in applyPulse', change it to have "id == ID" for each of the IDs
+The numbers printed will be in an ascending arithmetic sequence. I suppose in all these cases they are multiples of the first time (it was for me)
+
+Take the first number for each of the module IDs and then the lcm of these will be the answer.
+(the values in the list in part2 are my numbers)
 
 --}

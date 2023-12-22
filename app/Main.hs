@@ -19,11 +19,11 @@ import Day17 (part1, part2)
 import Day18 (part1, part2)
 import Day19 (part1, part2)
 import Day20 (part1, part2)
--- import Day21 (part1, part2)
--- import Day22 (part1, part2)
--- import Day23 (part1, part2)
--- import Day24 (part1, part2)
--- import Day25 (part1, part2)
+import Day21 (part1, part2)
+import Day22 (part1, part2)
+import Day23 (part1, part2)
+import Day24 (part1, part2)
+import Day25 (part1, part2)
 
 main :: IO ()
 main = day 20 0
@@ -76,16 +76,16 @@ getDayPart d p = case (d,p) of
   (19,2) -> Day19.part2
   (20,1) -> Day20.part1
   (20,2) -> Day20.part2
-  -- (21,1) -> Day21.part1
-  -- (21,2) -> Day21.part2
-  -- (22,1) -> Day22.part1
-  -- (22,2) -> Day22.part2
-  -- (23,1) -> Day23.part1
-  -- (23,2) -> Day23.part2
-  -- (24,1) -> Day24.part1
-  -- (24,2) -> Day24.part2
-  -- (25,1) -> Day25.part1
-  -- (25,2) -> Day25.part2
+  (21,1) -> Day21.part1
+  (21,2) -> Day21.part2
+  (22,1) -> Day22.part1
+  (22,2) -> Day22.part2
+  (23,1) -> Day23.part1
+  (23,2) -> Day23.part2
+  (24,1) -> Day24.part1
+  (24,2) -> Day24.part2
+  (25,1) -> Day25.part1
+  (25,2) -> Day25.part2
   _ -> error "Unknown day part"
 
 getInput :: Int -> IO String
