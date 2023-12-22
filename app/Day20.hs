@@ -4,24 +4,26 @@
 module Day20 (part1, part2) where
 
 import Data.Bifunctor (first, second)
-import Data.Foldable (foldl')
+import Data.Foldable (foldl', toList)
 import Data.List (elemIndex, isPrefixOf, sortBy)
 import Data.List.Extra (breakOn)
 import Data.List.Split (splitOn)
 import Data.Maybe (fromMaybe)
 import Data.Ord (Down (Down), comparing)
-import Data.Vector (Vector, filter, fromList, replicate, toList, (//))
+import Data.Vector (Vector, fromList, replicate, (//))
 import Data.Vector.Generic ((!))
+import Debug.Trace (trace)
 import Utils (withIndex)
 
 part1 :: String -> String
 part1 s = show (a * b)
   where
-    (a, b, _) = iterate (pushButton modules) (0, 0, dat) !! 1000
+    (a, b, _, _) = iterate (pushButton modules) (0, 0, dat, 0) !! 20000
     (modules, dat) = parseInput s
 
+-- 238593356738827
 part2 :: String -> String
-part2 s = unlines $ map show ""
+part2 s = show $ foldl' lcm 1 ([4027, 3769, 3929, 4001] :: [Integer])
   where
     (modules, dat) = parseInput s
     rx = last modules
@@ -33,8 +35,11 @@ conjStateToChar Disconnected = '_'
 conjStateToChar ConjHigh = '1'
 conjStateToChar ConjLow = '0'
 
-pushButton :: [Module] -> (Int, Int, Data) -> (Int, Int, Data)
-pushButton ms (lows, highs, dat) = (lows + newLows + 1, highs + newHighs, nextDat)
+conjString :: Vector ConjunctionState -> String
+conjString = map conjStateToChar . toList
+
+pushButton :: [Module] -> (Int, Int, Data, Int) -> (Int, Int, Data, Int)
+pushButton ms (lows, highs, dat, buttonCount) = (lows + newLows + 1, highs + newHighs, nextDat, buttonCount + 1)
   where
     broadcaster = head ms
     initialPulse = [(Low (-1), mId broadcaster)]
@@ -44,25 +49,23 @@ pushButton ms (lows, highs, dat) = (lows + newLows + 1, highs + newHighs, nextDa
     goLoop :: [(Pulse, MID)] -> Data -> (Int, Int, Data)
     goLoop ps _dat = (low, high, datNew)
       where
-        (_, low, high, datNew) = head $ Prelude.filter isFinished $ iterate goStep (ps, 0, 0, _dat)
+        (_, low, high, datNew, _) = head $ Prelude.filter isFinished $ iterate goStep (ps, 0, 0, _dat, 0)
 
-        isFinished ([], _, _, _) = True
+        isFinished ([], _, _, _, _) = True
         isFinished _ = False
 
-    goStep :: ([(Pulse, MID)], Int, Int, Data) -> ([(Pulse, MID)], Int, Int, Data)
-    goStep (ps, _lows, _highs, _dat) = (nextPulses, ls, hs, newDat)
+    goStep :: ([(Pulse, MID)], Int, Int, Data, Int) -> ([(Pulse, MID)], Int, Int, Data, Int)
+    goStep  (ps, _lows, _highs, _dat, step) = (nextPulses, ls, hs, newDat, step + 1)
       where
         (nextPulses, newDat) =
           foldl'
             ( \(acc, dat') (p, i) ->
-                if i == -1 then (acc, dat') else first (acc ++) $ applyPulse p (ms !! i) dat'
+                if i == -1 then (acc, dat') else first (acc ++) $ applyPulse' (buttonCount,step) p (ms !! i) dat'
             )
             ([], _dat)
             ps
         ls = _lows + length (Prelude.filter (isLow . fst) nextPulses)
-        hs =
-          -- if (ConjLow `notElem` (snd dat ! 1)) then error "hi" else
-          _highs + length (Prelude.filter (isHigh . fst) nextPulses)
+        hs = _highs + length (Prelude.filter (isHigh . fst) nextPulses)
 
 type MID = Int
 
@@ -119,6 +122,12 @@ isHigh (High _) = True
 data State = On | Off deriving (Eq, Show)
 
 data ConjunctionState = Disconnected | ConjLow | ConjHigh deriving (Eq, Show)
+
+-- Wrapper around applyPulse to trace output some debugging info
+applyPulse' :: (Int, Int) -> Pulse -> Module -> Data -> ([(Pulse, Int)], Data)
+applyPulse' (btnNum, step) (Low _) (Conjunction _ i)
+  | i == 7 && trace (show (btnNum, step, i)) False = undefined
+applyPulse' _ a b = applyPulse a b
 
 applyPulse :: Pulse -> Module -> Data -> ([(Pulse, Int)], Data)
 applyPulse (Low _) (FlipFlop dests i) dat = case fst dat ! i of
