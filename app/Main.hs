@@ -26,7 +26,7 @@ import Day24 (part1, part2)
 import Day25 (part1, part2)
 
 main :: IO ()
-main = day 21 0
+main = day 22 3
 
 day :: Int -> Int -> IO ()
 day d i = do

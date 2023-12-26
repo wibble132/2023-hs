@@ -1,7 +1,8 @@
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+
 module Utils
   ( mapOneIndexed,
     withOneIndex,
@@ -15,6 +16,14 @@ module Utils
     withIndex2D,
     isOpposite,
     isAdjacent,
+    Pos3,
+    Vec3,
+    xPos,
+    yPos,
+    zPos,
+    toPos3,
+    showLines,
+    projectToPos2,
   )
 where
 
@@ -22,7 +31,7 @@ import Data.Foldable (foldr')
 import Data.Ix (Ix)
 import Data.MemoTrie (HasTrie (..), Reg, enumerateGeneric, trieGeneric, untrieGeneric)
 import GHC.Generics (Generic)
-import Prelude hiding (Right, Left)
+import Prelude hiding (Left, Right)
 
 mapOneIndexed :: (Integral i) => (i -> a -> b) -> [a] -> [b]
 mapOneIndexed f = map (uncurry f) . withOneIndex
@@ -36,7 +45,7 @@ mapIndexed f = map (uncurry f) . withIndex
 withIndex :: (Integral i) => [a] -> [(i, a)]
 withIndex = ([0 ..] `zip`)
 
-withIndex2D :: (Integral i) => [[a]] -> [[((i,i),a)]]
+withIndex2D :: (Integral i) => [[a]] -> [[((i, i), a)]]
 withIndex2D = mapIndexed (\i -> mapIndexed (\j -> ((i, j),)))
 
 -- Not sure which of these is better? I guess the second but left both here and can't be bothered to test
@@ -58,7 +67,6 @@ instance HasTrie Direction where
   untrie = untrieGeneric unDirTree
   enumerate = enumerateGeneric unDirTree
 
-
 isOpposite :: Direction -> Direction -> Bool
 isOpposite Up Down = True
 isOpposite Down Up = True
@@ -76,3 +84,28 @@ isAdjacent Up Up = False
 isAdjacent Down Up = False
 isAdjacent Down Down = False
 isAdjacent _ _ = True
+
+type Pos3 = (Int, Int, Int)
+
+type Vec3 = (Pos3, Direction)
+
+xPos :: Pos3 -> Int
+xPos (x, _, _) = x
+
+yPos :: Pos3 -> Int
+yPos (_, y, _) = y
+
+zPos :: Pos3 -> Int
+zPos (_, _, z) = z
+
+toPos3 :: [Int] -> Pos3
+toPos3 (x : y : z : _) = (x, y, z)
+toPos3 [x, y] = (x, y, 0)
+toPos3 [x] = (x, 0, 0)
+toPos3 [] = (0, 0, 0)
+
+projectToPos2 :: Pos3 -> Position
+projectToPos2 (x,y,_) = (x,y)
+
+showLines :: (Show a) => [a] -> String
+showLines = unlines . map show
