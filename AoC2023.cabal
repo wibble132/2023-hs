@@ -8,7 +8,14 @@ cabal-version:      3.4
 name:               AoC2023
 version:            0.1
 
+common options
+    ghc-options:
+        -Wall
+        -threaded
+        -O3
+
 library
+    import: options
     exposed-modules: 
         Utils,
         Day01, Day02, Day03, Day04, Day05,
@@ -22,11 +29,7 @@ library
     default-language: Haskell2010
 
 executable AoC2023
-
-    ghc-options: 
-        -threaded
-        -O3
-
+    import: options
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
@@ -43,6 +46,7 @@ executable AoC2023
     default-language: Haskell2010
 
 test-suite tests
+    import: options
     type: exitcode-stdio-1.0
     main-is: Day22Test.hs
     build-depends: base ^>=4.17.2.0, HUnit ^>=1.6, AoC2023

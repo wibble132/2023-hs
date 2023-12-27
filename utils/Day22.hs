@@ -3,49 +3,31 @@
 
 module Day22 where
 
-import Control.Arrow ((***))
-import Control.Monad (ap, join, liftM)
 import Data.Bifunctor (first, second)
-import Data.List (foldl', group, sort, sortOn)
+import Data.List (foldl', group, sort, sortOn, intersect)
 import Data.List.Extra (groupSort, lastDef, splitOn)
-import Data.Map (Map, assocs, elems, empty, fromAscList, insert, keys, update)
+import Data.Map (Map, assocs, empty, fromAscList, insert, keys, update)
 import qualified Data.Map as Map
 import Debug.Trace (trace)
 import GHC.Arr (Array, listArray, (!), (//))
 import GHC.Base (liftM2)
-import Utils (Pos3, Position, projectToPos2, showLines, toPos3, xPos, yPos, zPos)
+import Utils (Pos3, Position, toPos3, xPos, yPos, zPos)
 
 -- 711 too high with HeightMap
--- 475 too low with settling
+-- 475 too low with settling - bad intersection testing
+-- 477 correct with settling 
 part1 :: String -> String
 part1 s =
-  -- showLines (filter (uncurry (/=)) $ zipWith (curry (join (***) (second removeDuplicates))) (assocs blockGraph) (assocs settledGraph))
-  -- showLines (map (settledGraph Map.!) [13, 44, 1, 15, 3])
-  showLines (map length [canBeRemoved, canBeRemoved2])
-  -- showLines [settledGraph, blockGraph] ++ "\n" ++ unlines (map showLines [blocks, settledBlocks])
+  show (length canBeRemoved2)
   where
-    -- show (settleBlock (init bs) (bs !! 5))
-
-    bs :: [Block]
-    bs = read "[Block {start = (0,6,1), end = (3,6,1), bId = 1},Block {start = (0,5,2), end = (0,7,2), bId = 3},Block {start = (1,6,2), end = (1,8,2), bId = 5},Block {start = (0,7,3), end = (2,7,3), bId = 0},Block {start = (2,4,4), end = (2,7,4), bId = 4},Block {start = (0,7,5), end = (3,7,5), bId = 2}]"
-
     blocks :: [Block]
     blocks = sortOn (zPos . start) $ parseInput s
 
-    -- blockGraph is a Map of Block to an array of the Blocks that block rests on
-    (_, blockGraph) = dropAllBlocks blocks
-    blockIds = Map.keys blockGraph
-    supports = Map.elems blockGraph
+    blockIds = map bId blocks
 
-    canBeRemoved = filter (\i -> [i] `notElem` supports) blockIds
-
-    (settledBlocks, settledGraph) = fullySettleBlocks blocks
+    (_, settledGraph) = fullySettleBlocks blocks
     supports2 = Map.elems settledGraph
     canBeRemoved2 = filter (\i -> [i] `notElem` supports2) blockIds
-
-    (ssBlocks, ssGraph) = settleBlocks settledBlocks
-
-    canBeRemoved3 = filter (\i -> fst (fullySettleBlocks (settledBlocks `removeAt` i)) `eqById` (settledBlocks `removeAt` i)) blockIds
 
 part2 :: String -> String
 part2 = const ""
@@ -86,21 +68,25 @@ getEmptyHeightMap blocks = listArray ((xMin, yMin), (xMax, yMax)) (repeat (0, -1
 dropBlockOntoMap :: HeightMap -> Block -> (HeightMap, [BlockId])
 dropBlockOntoMap heightMap b = (updatedHeights, restingBlocks)
   where
+    -- The points in the 2D projection of the block onto the ground
     groundArea :: [Position]
     groundArea = groundTiles b
+    -- List of the heights of the ground below the block, and the id of the block on top of that position
     underHeights :: [(Height, BlockId)]
     underHeights = sortOn fst $ map (heightMap !) groundArea
+    -- The tallest height on the ground below the block
     restingHeight :: Height
     restingHeight = maximum $ map fst underHeights
+    -- The id of the blocks at the maximum height below this block
     restingBlocks :: [BlockId]
     restingBlocks = filter (/= -1) . map snd $ filter ((== restingHeight) . fst) underHeights
-    blockHeight :: Height
-    blockHeight =
+    bHeight :: Height
+    bHeight =
       if zPos (start b) <= restingHeight
         then error "bad bloc"
         else zPos (end b) - zPos (start b) + 1
     updatedHeights :: HeightMap
-    updatedHeights = heightMap // map (,(restingHeight + blockHeight, bId b)) groundArea
+    updatedHeights = heightMap // map (,(restingHeight + bHeight, bId b)) groundArea
 
 dropAllBlocks :: [Block] -> (HeightMap, SupportGraph)
 dropAllBlocks bs = foldl' foldStep (getEmptyHeightMap bs, fromAscList [(i, []) | i <- [0 .. length bs - 1]]) bs
@@ -115,7 +101,6 @@ fullySettleBlocks :: [Block] -> ([Block], Map BlockId [BlockId])
 fullySettleBlocks bs = if settledBs == bs then res else trace "Bad settle" fullySettleBlocks settledBs
   where
     res@(settledBs, _) = settleBlocks bs
-    f = sortOn bId
 
 settleBlocks :: [Block] -> ([Block], Map BlockId [BlockId])
 settleBlocks blocks = foldl' f ([], empty) sortedBlocks
@@ -136,10 +121,7 @@ settleBlock blocks block =
         $ map ((,) =<< (zPos . end))
         $ filter
           ( \b ->
-              (projectToPos2 (start b) `elem` groundTiles block)
-                || (projectToPos2 (end b) `elem` groundTiles block)
-                || (projectToPos2 (start block) `elem` groundTiles b)
-                || (projectToPos2 (end block) `elem` groundTiles b)
+              not $ null $ intersect (groundTiles b) (groundTiles block)
           )
         $ filter
           (\b -> zPos (end b) < zPos (start block))
@@ -172,3 +154,6 @@ removeAt (l : ls) x = l : ls `removeAt` (x - 1)
 
 eqById :: [Block] -> [Block] -> Bool
 eqById b1 b2 = sortOn bId b1 == sortOn bId b2
+
+getById :: [Block] -> BlockId -> Block
+getById bs i = head . filter ((== i) . bId) $ bs
