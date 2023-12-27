@@ -30,7 +30,15 @@ part1 s =
     canBeRemoved2 = filter (\i -> [i] `notElem` supports2) blockIds
 
 part2 :: String -> String
-part2 = const ""
+part2 s = show $ sum $ map (countWillFall blockGraph) willFalls
+  where
+    blocks :: [Block]
+    blocks = sortOn (zPos . start) $ parseInput s
+    blockIds = map bId blocks
+
+    (_, blockGraph) = fullySettleBlocks blocks
+    
+    willFalls = filter (\i -> [i] `elem` Map.elems blockGraph) blockIds
 
 type BlockId = Int
 
@@ -40,7 +48,7 @@ type Height = Int
 
 type HeightMap = Array Position (Height, BlockId)
 
-type SupportGraph = Map Int [Int]
+type SupportGraph = Map BlockId [BlockId]
 
 parseInput :: String -> [Block]
 parseInput = map (uncurry pos3sToBlock . first lineToPos3s) . (`zip` [0 ..]) . lines
@@ -157,3 +165,21 @@ eqById b1 b2 = sortOn bId b1 == sortOn bId b2
 
 getById :: [Block] -> BlockId -> Block
 getById bs i = head . filter ((== i) . bId) $ bs
+
+countWillFall :: SupportGraph -> BlockId -> Int
+countWillFall graph bi = length (getFalling [bi]) - 1
+  where
+    reversed = _reverseGraph graph
+
+    getFalling :: [BlockId] -> [BlockId]
+    getFalling ids
+      | null nextAbove = ids
+      | otherwise = getFalling $ removeDuplicates (ids ++ nextAbove)
+      where
+        nextAbove = getFallingStep ids
+
+    getFallingStep :: [BlockId] -> [BlockId]
+    getFallingStep supports = concatMap (filter (\i -> (i `notElem` supports) && (graph Map.! i `isSubset` supports)) . (reversed Map.!)) supports
+
+isSubset :: Eq a => [a] -> [a] -> Bool
+isSubset l1 l2 = intersect l1 l2 == l1
